@@ -1,0 +1,21 @@
+# Allowlist: everything in ~/.claude is ignored unless listed below.
+# New files Claude Code invents stay private by default.
+/*
+.DS_Store
+__pycache__/
+
+!/.gitignore
+!/README.md
+!/LICENSE
+!/CLAUDE.md
+!/RTK.md
+!/HEARTBEAT.md
+!/settings.shared.json
+!/commands/
+!/skills/
+!/tools/
+
+# Work-specific and generated files stay local even inside tracked folders.
+commands/create-ci.md
+commands/generate-ci.md
+tools/*.txt

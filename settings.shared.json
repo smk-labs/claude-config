@@ -1,0 +1,127 @@
+{
+  "env": {
+    "BRANCH_GUARD": "off"
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite",
+      "TodoRead",
+      "Task",
+      "NotebookRead",
+      "NotebookEdit",
+      "mcp__Claude_Preview__preview_click",
+      "mcp__Claude_Preview__preview_console_logs",
+      "mcp__Claude_Preview__preview_eval",
+      "mcp__Claude_Preview__preview_fill",
+      "mcp__Claude_Preview__preview_inspect",
+      "mcp__Claude_Preview__preview_list",
+      "mcp__Claude_Preview__preview_logs",
+      "mcp__Claude_Preview__preview_network",
+      "mcp__Claude_Preview__preview_resize",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__Claude_Preview__preview_snapshot",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_Preview__preview_stop",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__file_upload",
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__form_input",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "mcp__Claude_in_Chrome__gif_creator",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__read_console_messages",
+      "mcp__Claude_in_Chrome__read_network_requests",
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__resize_window",
+      "mcp__Claude_in_Chrome__shortcuts_execute",
+      "mcp__Claude_in_Chrome__shortcuts_list",
+      "mcp__Claude_in_Chrome__switch_browser",
+      "mcp__Claude_in_Chrome__tabs_close_mcp",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__tabs_create_mcp",
+      "mcp__Claude_in_Chrome__upload_image",
+      "mcp__mcp-registry__search_mcp_registry",
+      "mcp__mcp-registry__suggest_connectors",
+      "mcp__scheduled-tasks__create_scheduled_task",
+      "mcp__scheduled-tasks__list_scheduled_tasks",
+      "mcp__scheduled-tasks__update_scheduled_task"
+    ],
+    "defaultMode": "bypassPermissions",
+    "additionalDirectories": [
+      "/tmp",
+      "/var/tmp"
+    ]
+  },
+  "model": "opus",
+  "enableAllProjectMcpServers": true,
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "ai-firstify@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
+    "playground@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": false,
+    "plugin-dev@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "gitlab@claude-plugins-official": false,
+    "product-tracking-skills@claude-plugins-official": true,
+    "mcp-server-dev@claude-plugins-official": false,
+    "huggingface-skills@claude-plugins-official": true,
+    "shopify-ai-toolkit@claude-plugins-official": true,
+    "shopify@claude-plugins-official": true,
+    "backlog-md@claude-backlog-md": true,
+    "chrome-devtools-mcp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-modernization@claude-plugins-official": true,
+    "gstack@gstack": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "yar@yar": true,
+    "readable@smk": true,
+    "getpix@smk": true,
+    "cursor-delegate@smk": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-backlog-md": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/SMKeramati/claude-backlog-md.git"
+      }
+    },
+    "gstack": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/SMKeramati/gstack.git"
+      }
+    },
+    "yar": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/rajool/yar.git"
+      }
+    },
+    "smk": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/smk-labs/claude-plugins.git"
+      }
+    }
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "autoCompactEnabled": false
+}
