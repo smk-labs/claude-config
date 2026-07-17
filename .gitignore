@@ -14,6 +14,7 @@ __pycache__/
 !/commands/
 !/skills/
 !/tools/
+!/.readable/
 
 # Work-specific and generated files stay local even inside tracked folders.
 commands/create-ci.md
