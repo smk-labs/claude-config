@@ -35,6 +35,7 @@ The user has corrected Claude on every rule below — repeatedly. Treat them as 
 - Estimate in **lines of code** (LoC) and risk / effort / complexity. Never in days or hours.
 - For exploration touching >5 files, dispatch a Sonnet Task subagent. Never read them into main context.
 - GitHub → `gh`. GitLab → `glab`. Fall back to `git`/`curl` only if blocked.
+- **Almost every repo here is solo.** Skip team-only ceremony (branches, PRs, review gates, approval steps) unless a project genuinely has other contributors.
 - **Never stop mid-plan-execution.** Once a plan is approved, plow through every todo to a push-ready state. No spot-check pauses, no "want me to keep going?" check-ins between phases. Run tests, build, lint, fix as you go without asking permission. The only legitimate stops: absolute blockers (missing credentials, design ambiguity the plan didn't resolve) and the final push/merge/deploy gate. Mid-task confirmation reads as cold feet, not diligence. Batch any questions and ask them once at the end.
 
 ## Workflow authoring (Dynamic Workflows)
@@ -48,5 +49,9 @@ The user has corrected Claude on every rule below — repeatedly. Treat them as 
 ## Above all
 
 If your next move is to edit a file, write prose, or open with "Let me…" — stop. Restate the problem, plan, then do the smallest correct thing.
+
+## Machine tools
+
+- Global Python 3.12.13 (shared, read-only for all users): `C:\Python\cpython-3.12.13-windows-x86_64-none`. On PATH as `python` and `python3`. pip via `python -m pip`. No py launcher on this machine.
 
 @RTK.md
