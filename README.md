@@ -9,8 +9,8 @@ My live `~/.claude`, under version control. It holds the parts of my Claude Code
 | `CLAUDE.md` | Operating manual: thinking, communication, and building rules for every session |
 | `RTK.md` | Usage notes for the rtk token-saving CLI proxy (imported by CLAUDE.md) |
 | `HEARTBEAT.md` | Cycle prompt for autonomous cron sessions |
-| `commands/` | Slash commands: browser-test, isolate, merge, tldr, to-gif |
-| `skills/` | 16 skills as real files, no symlinks. Vendored skills keep their original licenses |
+| `commands/` | Slash commands: tldr |
+| `skills/` | 14 skills as real files, no symlinks. Vendored skills keep their original licenses |
 | `tools/` | Scripts that extract and clean my own prompt history (outputs stay untracked) |
 | `settings.shared.json` | Portable settings template, with machine and work specific entries removed |
 
@@ -31,6 +31,8 @@ git -C ~/.claude reset --hard origin/main
 
 Plugins are not stored here; they reinstall from their marketplaces. The template's `extraKnownMarketplaces` block registers mine on first run: `anthropics/claude-plugins-official`, `smk-labs/claude-plugins`, `SMKeramati/gstack`, `SMKeramati/claude-backlog-md`, `rajool/yar`.
 
+One source per skill: anything shipped by a plugin in `smk-labs/claude-plugins` never gets a copy in `skills/` or `commands/` here. Two copies means two versions, and the stale one wins half the time. `skills/` holds only skills that no plugin of mine owns.
+
 ## Deliberately not here
 
 - Anything with credentials or account state: `settings.json`, `history.jsonl`, `projects/`, `shell-snapshots/`
@@ -42,7 +44,7 @@ The `.gitignore` is an allowlist: every path is ignored unless listed.
 ## Related repos
 
 - [claude-plugins](https://github.com/smk-labs/claude-plugins): my plugin marketplace (readable, getpix, cursor-delegate, and more)
-- [fig](https://github.com/smk-labs/fig): home repo of the fig skill (a copy ships in `skills/fig`)
+- [fig](https://github.com/smk-labs/fig): home repo of the fig skill (shipped as the `fig` plugin, not copied here)
 - [claude-rtl](https://github.com/smk-labs/claude-rtl): RTL patch for Claude Desktop
 - [claude-sync](https://github.com/smk-labs/claude-sync): see sessions across Claude Desktop accounts
 - [claude-deck](https://github.com/smk-labs/claude-deck): run several Claude accounts side by side
