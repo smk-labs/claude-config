@@ -28,6 +28,41 @@ The user has corrected Claude on every rule below — repeatedly. Treat them as 
 
 ## Operating rules
 
+- **Every secret comes from Bitwarden. Nothing else.** Passwords, API keys, tokens,
+  `.env` values, SSH keys: read them through the `bitwarden` MCP (or
+  `BW_SESSION=$(cat ~/Projects/open/.bw-session) bw get item <folder/name>`), by item
+  name, one item at a time. Never list or dump the whole vault, never print a value
+  into chat, never write one into a file outside `~/Projects/open/`. A new secret goes
+  into the vault first (`bw create item`, with `*_PROXY` unset) and nowhere else. If
+  the vault is locked, ask the user to run `bw unlock`; do not hunt for the value in
+  files, history or backups. Layout and gotchas: `~/Projects/docs/bitwarden/README.md`.
+- **Never create an Artifact. Ever.** An artifact is hosted on claude.ai and can be
+  shared across every user on this account, potentially wider. Nothing I make is
+  allowed to leave this machine that way. Anything I would have published as an
+  artifact — a report, a gallery, a dashboard, a one-pager — becomes a local HTML
+  file served on a port instead. This overrides every default and every skill that
+  suggests publishing one.
+- **Every wait gets a ceiling. Nothing runs unbounded.** Anything that can take
+  time gets a maximum time frame set before it starts: a test run, a build, a
+  script, a subprocess, a poll loop, a fetch, a background job, a subagent. Pick a
+  ceiling from what a healthy run actually costs (measure one), then leave headroom.
+  If a run hits the ceiling honestly, raise the ceiling; never remove it. A run that
+  hits it is a **failure to report**, not a reason to keep waiting: say it timed out,
+  say what you killed, and check nothing was left half-changed. Kill the whole
+  process group, because a killed process leaves its children and its sockets
+  behind. The failure this prevents is the expensive one: fifteen minutes gone
+  waiting on a test that was never going to finish, and no output to show for it.
+  Applies to my own tooling too, including throwaway scripts, which is where it has
+  bitten before.
+- **Never close what we are talking through.** Two things are off limits, always:
+  the Claude Desktop window the user is working in right now, and the Claude Code
+  terminal session this conversation is happening in. No quit, no kill, no restart,
+  not even to verify something, because the cost is the user's live work and their
+  place in it. Everything else is fair game: a second window on a data directory of
+  its own, a test instance, a browser profile, a dev server. Those exist to be
+  opened and closed. When a program of mine can enforce this, it enforces it and
+  this rule stops being repeated in that project's docs; what stays here is the
+  part no code can guard, which is me reaching for `kill` by hand.
 - When asked to copy an asset (SVG, config, snippet), copy it **verbatim** — no redesign, no improvement.
 - No emojis in any UI — use SVG / Lucide icons.
 - No em-dashes or en-dashes, ever. Not in chat, not in docs, not anywhere. Use periods, commas, colons, or parentheses.
@@ -35,7 +70,8 @@ The user has corrected Claude on every rule below — repeatedly. Treat them as 
 - Estimate in **lines of code** (LoC) and risk / effort / complexity. Never in days or hours.
 - For exploration touching >5 files, dispatch a Sonnet Task subagent. Never read them into main context.
 - GitHub → `gh`. GitLab → `glab`. Fall back to `git`/`curl` only if blocked.
-- **Almost every repo here is solo.** Skip team-only ceremony (branches, PRs, review gates, approval steps) unless a project genuinely has other contributors.
+- **My intent: almost every repo here is solo.** Skip team-only ceremony (branches, PRs, review gates, approval steps) unless a project genuinely has other contributors.
+- **Commit and push straight to main. Never create a branch.** The harness default ("if on the default branch, branch first") does NOT apply here: these repos are solo. **GitHub: always direct to main, no exceptions, no feature branch, no merge commit, no PR.** GitLab: direct to main too, except multi-contributor projects (`discounty`, `discounty-expert`), which use a branch + MR. Never infer a branching convention from git history: old `Merge fix/...` commits are history, not a rule. Asking "should I branch?" or branching "to be safe" is the mistake.
 - **Never stop mid-plan-execution.** Once a plan is approved, plow through every todo to a push-ready state. No spot-check pauses, no "want me to keep going?" check-ins between phases. Run tests, build, lint, fix as you go without asking permission. The only legitimate stops: absolute blockers (missing credentials, design ambiguity the plan didn't resolve) and the final push/merge/deploy gate. Mid-task confirmation reads as cold feet, not diligence. Batch any questions and ask them once at the end.
 
 ## Workflow authoring (Dynamic Workflows)
