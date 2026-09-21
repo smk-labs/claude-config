@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""map - read and edit ~/Projects/MAP.md straight from GitHub, no clone needed.
+
+  map find <word>                        rows whose path, remote or sentence match
+  map sections                           section names and their row counts
+  map add <section> <path> <remote> <s>  add a row inside that section
+  map set <path> <remote> <s>            rewrite that path's row where it sits
+  map rm  <path>                         drop that path's row
+  map raw                                print the whole map
+
+Any write takes --dry-run to print the diff instead of committing it.
+Source of truth is SMKeramati/daftar on GitHub; reads are cached for 120s.
+Offline or unauthenticated, reads fall back to the local clone and writes refuse.
+
+Sections and their counted headings are preserved: a row is inserted
+alphabetically inside one section only, and that heading's count follows it.
+"""
+import base64, difflib, json, os, re, subprocess, sys, time, urllib.error, urllib.request
+
+REPO = "SMKeramati/daftar"
+FILE = "MAP.md"
+API = f"https://api.github.com/repos/{REPO}/contents/{FILE}"
+CACHE = os.path.expanduser("~/.cache/daftar-map.md")
+LOCAL = os.path.expanduser("~/Projects/MAP.md")
+TTL, TIMEOUT = 120, 20
+ROW = "| [`"
+HEAD = re.compile(r"^## (.+?)(?: \((\d+)\))?\s*$")
+
+
+def token():
+    t = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if t:
+        return t
+    try:
+        r = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() or None
+    except Exception:
+        return None
+
+
+def api(method="GET", body=None):
+    t = token()
+    if not t:
+        raise RuntimeError("no GitHub token: run `gh auth login`")
+    req = urllib.request.Request(API, method=method,
+                                 data=json.dumps(body).encode() if body else None)
+    req.add_header("Authorization", f"Bearer {t}")
+    req.add_header("Accept", "application/vnd.github+json")
+    if body:
+        req.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+        return json.load(r)
+
+
+def fetch(fresh=False):
+    """Return (text, sha). sha is None when the text came from the local clone."""
+    if not fresh and os.path.exists(CACHE) and time.time() - os.path.getmtime(CACHE) < TTL:
+        d = json.load(open(CACHE))
+        return d["text"], d["sha"]
+    try:
+        d = api()
+        text = base64.b64decode(d["content"]).decode()
+        os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+        json.dump({"text": text, "sha": d["sha"]}, open(CACHE, "w"))
+        return text, d["sha"]
+    except Exception as e:
+        if os.path.exists(LOCAL):
+            # No API, so refresh the clone over git instead, then read it.
+            pulled = False
+            if os.path.isdir(os.path.expanduser("~/Projects/.git")):
+                r = subprocess.run(["git", "-C", os.path.expanduser("~/Projects"),
+                                    "pull", "--ff-only", "-q"], capture_output=True, timeout=60)
+                pulled = r.returncode == 0
+            print(f"map: no GitHub API ({e}); read the local clone"
+                  + (" after a git pull." if pulled else ", which may be stale."), file=sys.stderr)
+            return open(LOCAL).read(), None
+        raise
+
+
+def commit(old, new, sha, message, dry):
+    if old == new:
+        raise SystemExit("map: that would change nothing.")
+    if dry:
+        sys.stdout.writelines(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                                                   "MAP.md", "MAP.md (would be)"))
+        return
+    if sha is None:
+        raise SystemExit("map: cannot write while GitHub is unreachable.")
+    body = {"message": message, "content": base64.b64encode(new.encode()).decode(), "sha": sha}
+    try:
+        api("PUT", body)
+    except urllib.error.HTTPError as e:
+        if e.code == 409:
+            raise SystemExit("map: the map changed under this edit. Run the same command again.")
+        raise
+    try:
+        os.remove(CACHE)
+    except OSError:
+        pass
+    if os.path.isdir(os.path.expanduser("~/Projects/.git")):
+        subprocess.run(["git", "-C", os.path.expanduser("~/Projects"), "pull", "--ff-only", "-q"],
+                       capture_output=True, timeout=60)
+
+
+def key(line):
+    return line.split("`")[1]
+
+
+def sections(lines):
+    """[(heading_index, name, count_or_None, first_row, last_row_exclusive)]"""
+    heads = [(i, m.group(1), int(m.group(2)) if m.group(2) else None)
+             for i, l in enumerate(lines) for m in [HEAD.match(l)] if m]
+    out = []
+    for n, (i, name, cnt) in enumerate(heads):
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        rows = [j for j in range(i, end) if lines[j].startswith(ROW)]
+        out.append((i, name, cnt, rows))
+    return out
+
+
+def recount(lines, head_i):
+    """Set that heading's count to the rows actually under it. Self-heals old drift."""
+    m = HEAD.match(lines[head_i])
+    if not (m and m.group(2) is not None):
+        return
+    end = next((j for j in range(head_i + 1, len(lines)) if HEAD.match(lines[j])), len(lines))
+    n = sum(1 for j in range(head_i, end) if lines[j].startswith(ROW))
+    lines[head_i] = f"## {m.group(1)} ({n})"
+
+
+def find_row(lines, path):
+    for i, l in enumerate(lines):
+        if l.startswith(ROW) and key(l) == path:
+            return i
+    return None
+
+
+def main():
+    argv = [a for a in sys.argv[1:] if a != "--dry-run"]
+    dry = "--dry-run" in sys.argv
+    fresh = "--fresh" in argv
+    argv = [a for a in argv if a != "--fresh"]
+    cmd = argv[0] if argv else "help"
+    if cmd in ("-h", "--help", "help"):
+        print(__doc__.strip()); return
+
+    text, sha = fetch(fresh=fresh or dry or cmd in ("add", "set", "rm"))
+    lines = text.split("\n")
+
+    if cmd == "raw":
+        print(text)
+
+    elif cmd == "sections":
+        for _, name, cnt, rows in sections(lines):
+            print(f"{name:26} {len(rows)} rows" + (f"  (heading says {cnt})" if cnt not in (None, len(rows)) else ""))
+
+    elif cmd == "find":
+        if len(argv) < 2:
+            raise SystemExit("usage: map find <word>")
+        w = argv[1].lower()
+        hits = [l for l in lines if l.startswith(ROW) and w in l.lower()]
+        if not hits:
+            print("no match"); return
+        for l in hits:
+            remote = l.split("](", 1)[1].split(")", 1)[0] if "](" in l else ""
+            print(f"{key(l):34} {remote or '(no remote)'}\n   {l.rsplit('| ', 1)[-1].rstrip(' |')}")
+
+    elif cmd == "add":
+        if len(argv) < 5:
+            raise SystemExit("usage: map add <section> <path> <remote> <one sentence>\n"
+                             "sections: " + ", ".join(s[1] for s in sections(lines)))
+        sec, path, remote, sentence = argv[1], argv[2], argv[3], " ".join(argv[4:])
+        if find_row(lines, path) is not None:
+            raise SystemExit(f"map: {path} is already on the map. Use `map set`.")
+        match = [s for s in sections(lines) if sec.lower() in s[1].lower()]
+        if len(match) != 1:
+            raise SystemExit(f"map: {'no' if not match else 'more than one'} section matches "
+                             f"{sec!r}. Sections: " + ", ".join(s[1] for s in sections(lines)))
+        head_i, name, _, rows = match[0]
+        new = f"| [`{path}`]({remote}) | {sentence} |"
+        at = next((j for j in rows if key(lines[j]).lower() > path.lower()),
+                  (rows[-1] + 1) if rows else head_i + 1)
+        lines.insert(at, new)
+        recount(lines, head_i)
+        commit(text, "\n".join(lines), sha, f"map: {path}", dry)
+        if not dry:
+            print(f"added {path} to {name}")
+
+    elif cmd == "set":
+        if len(argv) < 4:
+            raise SystemExit("usage: map set <path> <remote> <one sentence>")
+        path, remote, sentence = argv[1], argv[2], " ".join(argv[3:])
+        i = find_row(lines, path)
+        if i is None:
+            raise SystemExit(f"map: {path} is not on the map. Use `map add <section> ...`.")
+        lines[i] = f"| [`{path}`]({remote}) | {sentence} |"
+        commit(text, "\n".join(lines), sha, f"map: {path}", dry)
+        if not dry:
+            print(f"set {path}")
+
+    elif cmd == "rm":
+        if len(argv) < 2:
+            raise SystemExit("usage: map rm <path>")
+        path = argv[1]
+        i = find_row(lines, path)
+        if i is None:
+            raise SystemExit(f"map: {path} is not on the map.")
+        head_i = max((s[0] for s in sections(lines) if s[0] < i), default=None)
+        del lines[i]
+        if head_i is not None:
+            recount(lines, head_i)
+        commit(text, "\n".join(lines), sha, f"map: drop {path}", dry)
+        if not dry:
+            print(f"dropped {path}")
+
+    else:
+        raise SystemExit(f"map: unknown command {cmd!r}. Try `map help`.")
+
+
+if __name__ == "__main__":
+    main()
