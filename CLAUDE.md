@@ -30,8 +30,9 @@ The user has corrected Claude on every rule below — repeatedly. Treat them as 
 
 - **Every secret comes from Bitwarden. Nothing else.** Passwords, API keys, tokens,
   `.env` values, SSH keys: read them through the `bitwarden` MCP (or
-  `BW_SESSION=$(cat ~/Projects/open/.bw-session) bw get item <folder/name>`), by item
-  name, one item at a time. Never list or dump the whole vault, never print a value
+  `bw list items --search <word>` then `bw get item <id>`), by item name, one item at
+  a time. `bw get item <name>` alone is ambiguous when several names share a word: it
+  prints ids instead of the item, so always resolve to an id first. Never list or dump the whole vault, never print a value
   into chat, never write one into a file outside `~/Projects/open/`. A new secret goes
   into the vault first (`bw create item`, with `*_PROXY` unset) and nowhere else. If
   the vault is locked, ask the user to run `bw unlock`; do not hunt for the value in
