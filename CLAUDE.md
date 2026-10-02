@@ -1,2 +1,2 @@
-- **The map of every project is `~/Projects/MAP.md`**, in the private `SMKeramati/daftar` repo. Read and edit it with the `map` skill (`~/.claude/skills/map/map find <word>`), which works from any machine with no clone and never needs a push or a pull. Give a new project its row the same session, and never hand-edit the file.
-- **Every secret comes from Bitwarden**, never from a file, a backup or git history: `bw list items --search <word>`, then `bw get item <id>`. Item names are the paths they had under `open/`, e.g. `accounts/vercel.env`. Never print a value into chat.
+- **Every project and machine is in `~/Projects/MAP.md`**, the private repo `SMKeramati/daftar`. Pull before reading it; edit it by hand, then commit and push.
+- **Secrets are in Bitwarden only.** `~/Projects/daftar get <item>` prints one as the file it came from; `bw list items --search <word>` finds names like `accounts/vercel.env`.
