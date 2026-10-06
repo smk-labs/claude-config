@@ -1,2 +1,3 @@
 - **Every project and machine is in `~/Projects/MAP.md`**, the private repo `SMKeramati/daftar`. Pull before reading it; edit it by hand, then commit and push.
 - **Secrets are in Bitwarden only.** `~/Projects/daftar get <item>` prints one as the file it came from; `bw list items --search <word>` finds names like `accounts/vercel.env`.
+- **Partnerz secrets are in the company vault**, `safe.partnerz.io`: Discounty, Gabriel, ousmousa, `git.partnerz.io`, company tokens. Read with `~/Projects/daftar --pz get <item>`, search with `~/Projects/daftar pz list items --search <word>`, and create new Partnerz secrets there, not in the personal vault.
